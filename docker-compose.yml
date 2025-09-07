@@ -3,7 +3,7 @@ version: '3.8'
 services:
   autenticacion:
     build:
-      context: ./autenticacion
+      context: ./autenticaci-n_ms-WebFlux
       dockerfile: deployment/Dockerfile
     container_name: autenticacion-ms
     ports:
@@ -13,21 +13,22 @@ services:
     networks:
       - pragma-network
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://${AUTH_DB_HOST}:${AUTH_DB_PORT}/${AUTH_DB_NAME}
-      SPRING_DATASOURCE_USERNAME: ${AUTH_DB_USER}
-      SPRING_DATASOURCE_PASSWORD: ${AUTH_DB_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:mysql://${AUTH_DB_HOST}:${DB_PORT}/${AUTH_DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       SERVER_PORT: ${AUTH_PORT}
-      adapters.r2dbc.port: ${AUTH_DB_PORT}
+      adapters.r2dbc.port: ${DB_PORT}
       adapters.r2dbc.host: ${AUTH_DB_HOST}
       adapters.r2dbc.database: ${AUTH_DB_NAME}
-      adapters.r2dbc.username: ${AUTH_DB_USER}
-      adapters.r2dbc.password: ${AUTH_DB_PASSWORD}
+      adapters.r2dbc.username: ${DB_USER}
+      adapters.r2dbc.password: ${DB_PASSWORD}
+      jwt.secret: ${JWT_SECRET}
 
   autenticacion-db:
     image: mysql:8.0
     container_name: mysql-autenticacion-db
     environment:
-      MYSQL_ROOT_PASSWORD: ${AUTH_DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: ${AUTH_DB_NAME}
       MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
     volumes:
@@ -40,7 +41,7 @@ services:
 
   solicitud:
     build:
-      context: ./solicitudes
+      context: ./solicitud_ms-WebFlux
       dockerfile: deployment/Dockerfile
     container_name: solicitud-ms
     ports:
@@ -51,22 +52,23 @@ services:
     networks:
       - pragma-network
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://${SOL_DB_HOST}:${SOL_DB_PORT}/${SOL_DB_NAME}
-      SPRING_DATASOURCE_USERNAME: ${SOL_DB_USER}
-      SPRING_DATASOURCE_PASSWORD: ${SOL_DB_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:mysql://${SOL_DB_HOST}:${DB_PORT}/${SOL_DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       SERVER_PORT: ${SOL_PORT}
-      adapters.r2dbc.port: ${SOL_DB_PORT}
+      adapters.r2dbc.port: ${DB_PORT}
       adapters.r2dbc.host: ${SOL_DB_HOST}
       adapters.r2dbc.database: ${SOL_DB_NAME}
-      adapters.r2dbc.username: ${SOL_DB_USER}
-      adapters.r2dbc.password: ${SOL_DB_PASSWORD}
+      adapters.r2dbc.username: ${DB_USER}
+      adapters.r2dbc.password: ${DB_PASSWORD}
       adapter.restconsumer.url: "http://autenticacion:${AUTH_PORT}"
+      jwt.secret: ${JWT_SECRET}
 
   solicitud-db:
     image: mysql:8.0
     container_name: mysql-solicitud-db
     environment:
-      MYSQL_ROOT_PASSWORD: ${SOL_DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: ${SOL_DB_NAME}
       MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
     volumes:

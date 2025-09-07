@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  autenticacion:
+    build:
+      context: ./autenticacion
+      dockerfile: deployment/Dockerfile
+    container_name: autenticacion-ms
+    ports:
+      - "${AUTH_PORT}:${AUTH_PORT}"
+    depends_on:
+      - autenticacion-db
+    networks:
+      - pragma-network
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://${AUTH_DB_HOST}:${AUTH_DB_PORT}/${AUTH_DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${AUTH_DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${AUTH_DB_PASSWORD}
+      SERVER_PORT: ${AUTH_PORT}
+      adapters.r2dbc.port: ${AUTH_DB_PORT}
+      adapters.r2dbc.host: ${AUTH_DB_HOST}
+      adapters.r2dbc.database: ${AUTH_DB_NAME}
+      adapters.r2dbc.username: ${AUTH_DB_USER}
+      adapters.r2dbc.password: ${AUTH_DB_PASSWORD}
+
+  autenticacion-db:
+    image: mysql:8.0
+    container_name: mysql-autenticacion-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${AUTH_DB_PASSWORD}
+      MYSQL_DATABASE: ${AUTH_DB_NAME}
+      MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
+    volumes:
+      - autenticacion-db-data:/var/lib/mysql
+      - ./db-scripts/autenticacion:/docker-entrypoint-initdb.d
+    networks:
+      - pragma-network
+    ports:
+      - "3306:3306"
+
+  solicitud:
+    build:
+      context: ./solicitudes
+      dockerfile: deployment/Dockerfile
+    container_name: solicitud-ms
+    ports:
+      - "${SOL_PORT}:${SOL_PORT}"
+    depends_on:
+      - autenticacion
+      - solicitud-db
+    networks:
+      - pragma-network
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://${SOL_DB_HOST}:${SOL_DB_PORT}/${SOL_DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${SOL_DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${SOL_DB_PASSWORD}
+      SERVER_PORT: ${SOL_PORT}
+      adapters.r2dbc.port: ${SOL_DB_PORT}
+      adapters.r2dbc.host: ${SOL_DB_HOST}
+      adapters.r2dbc.database: ${SOL_DB_NAME}
+      adapters.r2dbc.username: ${SOL_DB_USER}
+      adapters.r2dbc.password: ${SOL_DB_PASSWORD}
+      adapter.restconsumer.url: "http://autenticacion:${AUTH_PORT}"
+
+  solicitud-db:
+    image: mysql:8.0
+    container_name: mysql-solicitud-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${SOL_DB_PASSWORD}
+      MYSQL_DATABASE: ${SOL_DB_NAME}
+      MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
+    volumes:
+      - solicitud-db-data:/var/lib/mysql
+      - ./db-scripts/solicitud:/docker-entrypoint-initdb.d
+    networks:
+      - pragma-network
+    ports:
+      - "3307:3306"
+
+networks:
+  pragma-network:
+    driver: bridge
+
+volumes:
+  autenticacion-db-data:
+  solicitud-db-data:

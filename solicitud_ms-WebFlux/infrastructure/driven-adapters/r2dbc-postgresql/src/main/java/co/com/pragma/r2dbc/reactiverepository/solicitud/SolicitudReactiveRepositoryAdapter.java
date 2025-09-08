@@ -44,6 +44,15 @@ public class SolicitudReactiveRepositoryAdapter extends ReactiveAdapterOperation
     }
 
     @Override
+    public Mono<Solicitud> obtenerSolicitudPorId(Long solicitudId) {
+        return repository.findBySolicitudId(solicitudId)
+                .onErrorResume(e-> {
+                    log.error("Se genero un error al consultar solicitud con id : {}", solicitudId);
+                    return Mono.error(new ErrorPersistencia("Error al consultar solicitud por id : "+ solicitudId, Set.of(e.getMessage())));
+                });
+    }
+
+    @Override
     public Flux<Solicitud> obtenerSolicitudesPorEstado(Integer estadoId, Integer limit, Integer offset) {
         log.info("Consultando solicitudes con estadoId : {}", estadoId);
         return repository.findByEstadoIdWithPagination(estadoId.longValue(), limit, offset)
@@ -62,4 +71,5 @@ public class SolicitudReactiveRepositoryAdapter extends ReactiveAdapterOperation
                     return Mono.error(new ErrorPersistencia("Error al consultar total de solicitudes por estado", Set.of(e.getMessage())));
                 });
     }
+
 }

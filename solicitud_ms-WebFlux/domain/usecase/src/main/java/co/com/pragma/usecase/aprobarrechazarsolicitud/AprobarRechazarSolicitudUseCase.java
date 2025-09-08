@@ -2,7 +2,9 @@ package co.com.pragma.usecase.aprobarrechazarsolicitud;
 
 import co.com.pragma.errores.ErrorDominio;
 import co.com.pragma.model.estado.gateways.EstadoRepository;
+import co.com.pragma.model.mensaje.gateways.MensajeRepository;
 import co.com.pragma.model.solicitud.Solicitud;
+import co.com.pragma.model.solicitud.consecuencias.EstadoSolicitudActualizadaMensaje;
 import co.com.pragma.model.solicitud.gateways.SolicitudRepository;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
@@ -17,6 +19,7 @@ public class AprobarRechazarSolicitudUseCase {
 
     private final SolicitudRepository solicitudRepository;
     private final EstadoRepository estadoRepository;
+    private final MensajeRepository mensajeRepository;
 
     public Mono<Solicitud> ejecutar(Solicitud solicitud){
         return solicitudRepository.obtenerSolicitudPorId(solicitud.getSolicitudId())
@@ -27,8 +30,32 @@ public class AprobarRechazarSolicitudUseCase {
                         .switchIfEmpty(Mono.error(new ErrorDominio("Estado a actualizar no es valido (Aprobada, Rechazada)", Set.of("estadoId:"+solicitud.getEstadoId()))))
                         .flatMap(estado -> {
                             solicitudEncontrada.setEstadoId(estado.getEstadoId());
-                            return solicitudRepository.guardar(solicitudEncontrada);
+                            return solicitudRepository.guardar(solicitudEncontrada)
+                                    .map(this::toMessage)
+                                    .doOnSuccess(mensajeRepository::enviarMensajeSQS)
+                                    .map(this::toModel);
                         })
                 );
+    }
+
+    private EstadoSolicitudActualizadaMensaje toMessage(Solicitud solicitud){
+        return EstadoSolicitudActualizadaMensaje.builder()
+                .solicitudId(solicitud.getSolicitudId())
+                .monto(solicitud.getMonto())
+                .plazo(solicitud.getPlazo())
+                .documentoId(solicitud.getDocumentoId())
+                .tipoPrestamoId(solicitud.getTipoPrestamoId())
+                .estadoId(solicitud.getEstadoId())
+                .build();
+    }
+    private Solicitud toModel(EstadoSolicitudActualizadaMensaje msj){
+        return Solicitud.builder()
+                .solicitudId(msj.getSolicitudId())
+                .monto(msj.getMonto())
+                .plazo(msj.getPlazo())
+                .documentoId(msj.getDocumentoId())
+                .tipoPrestamoId(msj.getTipoPrestamoId())
+                .estadoId(msj.getEstadoId())
+                .build();
     }
 }

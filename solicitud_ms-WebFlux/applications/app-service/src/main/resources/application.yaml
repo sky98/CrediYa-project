@@ -42,9 +42,8 @@ adapter:
     timeout: 5000
     url: "http://autenticacion:${AUTH_PORT}"
   sqs:
-    region: "us-east-1"
-    queueUrl: "http://localhost:4566/000000000000/sample"
-    endpoint: "http://localhost:4566 # For localstack only"
+    region: "east-2"
+    queueUrl: "${SQS_QUEUE_URL}"
 resilience4j:
   circuitbreaker:
     instances:

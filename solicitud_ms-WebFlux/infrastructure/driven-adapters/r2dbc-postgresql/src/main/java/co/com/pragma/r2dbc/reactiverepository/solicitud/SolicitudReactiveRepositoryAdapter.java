@@ -33,6 +33,12 @@ public class SolicitudReactiveRepositoryAdapter extends ReactiveAdapterOperation
 
 
     @Override
+    public Mono<Solicitud> rollback(Solicitud solicitud) {
+        log.info("Realizando Rollback de la operacion anterior.");
+        return guardar(solicitud);
+    }
+
+    @Override
     public Mono<Solicitud> guardar(Solicitud solicitud) {
         return transactionalOperator.execute(
                 status -> super.save(solicitud)

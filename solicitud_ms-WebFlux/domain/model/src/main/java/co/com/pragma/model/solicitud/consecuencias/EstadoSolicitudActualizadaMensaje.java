@@ -1,6 +1,5 @@
 package co.com.pragma.model.solicitud.consecuencias;
 
-import co.com.pragma.model.mensaje.Mensaje;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,7 +11,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-public class EstadoSolicitudActualizadaMensaje extends Mensaje {
+public class EstadoSolicitudActualizadaMensaje {
     private Long solicitudId;
     private BigDecimal monto;
     private Long plazo;

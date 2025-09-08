@@ -1,8 +1,8 @@
 package co.com.pragma.model.mensaje.gateways;
 
-import co.com.pragma.model.mensaje.Mensaje;
+import co.com.pragma.model.solicitud.Solicitud;
 import reactor.core.publisher.Mono;
 
 public interface MensajeRepository {
-    Mono<String> enviarMensajeSQS(Mensaje mensaje);
+    Mono<Solicitud> enviarSolicitudActualizada(Solicitud solicitud);
 }

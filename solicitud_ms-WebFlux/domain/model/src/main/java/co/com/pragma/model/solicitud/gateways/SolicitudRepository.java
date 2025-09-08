@@ -5,6 +5,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface SolicitudRepository {
+    Mono<Solicitud> rollback(Solicitud solicitud);
     Mono<Solicitud> guardar(Solicitud solicitud);
     Mono<Solicitud> obtenerSolicitudPorId(Long solicitudId);
     Flux<Solicitud> obtenerSolicitudesPorEstado(Integer estadoId, Integer limit, Integer offset);

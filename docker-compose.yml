@@ -63,6 +63,10 @@ services:
       adapters.r2dbc.password: ${DB_PASSWORD}
       adapter.restconsumer.url: "http://autenticacion:${AUTH_PORT}"
       jwt.secret: ${JWT_SECRET}
+      sqs.queueUrl: ${SQS_QUEUE_URL}
+      sqs.region: ${SQS_REGION}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
 
   solicitud-db:
     image: mysql:8.0

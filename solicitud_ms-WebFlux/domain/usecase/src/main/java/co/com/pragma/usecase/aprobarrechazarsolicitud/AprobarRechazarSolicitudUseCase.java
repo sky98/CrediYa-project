@@ -4,7 +4,6 @@ import co.com.pragma.errores.ErrorDominio;
 import co.com.pragma.model.estado.gateways.EstadoRepository;
 import co.com.pragma.model.mensaje.gateways.MensajeRepository;
 import co.com.pragma.model.solicitud.Solicitud;
-import co.com.pragma.model.solicitud.consecuencias.EstadoSolicitudActualizadaMensaje;
 import co.com.pragma.model.solicitud.gateways.SolicitudRepository;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
@@ -31,31 +30,16 @@ public class AprobarRechazarSolicitudUseCase {
                         .flatMap(estado -> {
                             solicitudEncontrada.setEstadoId(estado.getEstadoId());
                             return solicitudRepository.guardar(solicitudEncontrada)
-                                    .map(this::toMessage)
-                                    .doOnSuccess(mensajeRepository::enviarMensajeSQS)
-                                    .map(this::toModel);
+                                    .doOnSuccess( solicitudGuardada -> mensajeRepository.enviarSolicitudActualizada(solicitudGuardada)
+                                            .onErrorResume(e-> {
+                                                solicitudRepository.rollback(solicitudEncontrada);
+                                                return Mono.error(e);
+                                            })
+                                    );
                         })
                 );
     }
 
-    private EstadoSolicitudActualizadaMensaje toMessage(Solicitud solicitud){
-        return EstadoSolicitudActualizadaMensaje.builder()
-                .solicitudId(solicitud.getSolicitudId())
-                .monto(solicitud.getMonto())
-                .plazo(solicitud.getPlazo())
-                .documentoId(solicitud.getDocumentoId())
-                .tipoPrestamoId(solicitud.getTipoPrestamoId())
-                .estadoId(solicitud.getEstadoId())
-                .build();
-    }
-    private Solicitud toModel(EstadoSolicitudActualizadaMensaje msj){
-        return Solicitud.builder()
-                .solicitudId(msj.getSolicitudId())
-                .monto(msj.getMonto())
-                .plazo(msj.getPlazo())
-                .documentoId(msj.getDocumentoId())
-                .tipoPrestamoId(msj.getTipoPrestamoId())
-                .estadoId(msj.getEstadoId())
-                .build();
-    }
+
+
 }

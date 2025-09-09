@@ -30,11 +30,9 @@ public class AprobarRechazarSolicitudUseCase {
                         .flatMap(estado -> {
                             solicitudEncontrada.setEstadoId(estado.getEstadoId());
                             return solicitudRepository.guardar(solicitudEncontrada)
-                                    .doOnSuccess( solicitudGuardada -> mensajeRepository.enviarSolicitudActualizada(solicitudGuardada)
-                                            .onErrorResume(e-> {
-                                                solicitudRepository.rollback(solicitudEncontrada);
-                                                return Mono.error(e);
-                                            })
+                                    .flatMap(solicitudGuardada -> mensajeRepository.enviarSolicitudActualizada(solicitudGuardada)
+                                            .onErrorResume(e -> solicitudRepository.rollback(solicitudEncontrada))
+                                            .thenReturn(solicitudGuardada)
                                     );
                         })
                 );

@@ -42,7 +42,7 @@ adapter:
     timeout: 5000
     url: "http://autenticacion:${AUTH_PORT}"
   sqs:
-    region: "east-2"
+    region: "${AWS_REGION}"
     queueUrl: "${SQS_QUEUE_URL}"
 resilience4j:
   circuitbreaker:

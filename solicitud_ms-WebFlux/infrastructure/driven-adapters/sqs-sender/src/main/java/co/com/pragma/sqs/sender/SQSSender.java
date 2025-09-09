@@ -1,10 +1,7 @@
 package co.com.pragma.sqs.sender;
 
 import co.com.pragma.errores.ErrorSQS;
-import co.com.pragma.model.mensaje.gateways.MensajeRepository;
-import co.com.pragma.model.solicitud.Solicitud;
 import co.com.pragma.sqs.sender.config.SQSSenderProperties;
-import co.com.pragma.sqs.sender.mapper.SolicitudMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -20,29 +17,13 @@ import java.util.Set;
 @Service
 @Log4j2
 @RequiredArgsConstructor
-public class SQSSender implements MensajeRepository {
+public class SQSSender {
 
     private final ObjectMapper objectMapper;
     private final SQSSenderProperties properties;
     private final SqsAsyncClient client;
-    private final SolicitudMapper solicitudMapper;
 
-    @Override
-    public Mono<Solicitud> enviarSolicitudActualizada(Solicitud modelo) {
-        return Mono.fromCallable(() -> solicitudMapper.toMessage(modelo))
-                .flatMap(this::serializar)
-                .flatMap(this::send)
-                .doOnSuccess(token -> log.info("Mensaje enviado con exito : {}", token))
-                .onErrorResume(e -> {
-                    log.error("Se ha generado un error al enviar mensaje a SQS : {}", e.getMessage());
-                    return Mono.error(
-                            new ErrorSQS("Se ha generado un error al enviar mensaje a SQS : " + e.getMessage(), Set.of(e.getMessage()))
-                    );
-                })
-                .map(resp -> modelo);
-    }
-
-    private Mono<String> send(String message) {
+    public Mono<String> send(String message) {
         return Mono.fromCallable(() -> buildRequest(message))
                 .flatMap(request -> Mono.fromFuture(client.sendMessage(request)))
                 .doOnNext(response -> log.debug("Message sent {}", response.messageId()))
@@ -56,7 +37,7 @@ public class SQSSender implements MensajeRepository {
                 .build();
     }
 
-    private <T> Mono<String> serializar(T object){
+    public  <T> Mono<String> serializar(T object){
         String data = null;
         try{
             data = objectMapper.writeValueAsString(object);

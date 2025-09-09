@@ -4,9 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
+@Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -15,7 +17,7 @@ public class EstadoSolicitudActualizadaMensaje {
     private Long solicitudId;
     private BigDecimal monto;
     private Long plazo;
-    private Long estadoId;
-    private Long tipoPrestamoId;
+    private String estado;
+    private String tipoPrestamo;
     private Long documentoId;
 }
